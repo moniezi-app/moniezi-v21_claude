@@ -4421,17 +4421,14 @@ const demoMileageTrips: MileageTrip[] = [
         })
       );
 
-      // Build filename from current period
-      const periodLabel =
-        plPeriodType === 'month'
-          ? referenceDate.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-          : plPeriodType === 'quarter'
-            ? `Q${Math.floor(referenceDate.getMonth() / 3) + 1}_${referenceDate.getFullYear()}`
-            : plPeriodType === 'year'
-              ? referenceDate.getFullYear().toString()
-              : 'All_Time';
-      const safeLabel = String(periodLabel).replace(/[^a-z0-9]/gi, '_');
-      const filename = `Profit_Loss_${safeLabel}.pdf`;
+      // Build filename using proPLData.periodLabel — covers all 7 period types
+      // (month / quarter / year / ytd / lastYear / trailing12 / custom)
+      const bizName = (settings.businessName || 'Business').replace(/[^a-z0-9]/gi, '_');
+      const safeLabel = String(proPLData.periodLabel)
+        .replace(/[^a-z0-9]/gi, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
+      const filename = `PL_${bizName}_${safeLabel}.pdf`;
 
       // Clone off-screen so scrollable container does not clip the PDF
       const source = element as HTMLElement;
@@ -4805,7 +4802,11 @@ const demoMileageTrips: MileageTrip[] = [
       const pageHeightMm = Math.max(297, pxToMm(contentHeight) * (pageWidthMm / pxToMm(contentWidth)));
 
       const title = (settings.businessName || 'Business').replace(/[^a-z0-9]/gi, '_');
-      const filename = `PL_${title}_${new Date().toISOString().slice(0,10)}.pdf`;
+      const periodSafe = String(proPLData.periodLabel)
+        .replace(/[^a-z0-9]/gi, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
+      const filename = `PL_${title}_${periodSafe}.pdf`;
 
       const opt = {
         margin: 0,
@@ -8030,7 +8031,7 @@ html:not(.dark) .divide-slate-200 > :not([hidden]) ~ :not([hidden]) { border-col
 
                         const opt = {
                           margin: [marginMm, marginMm, marginMm, marginMm],
-                          filename: `PL_${settings.businessName.replace(/[^a-z0-9]/gi, '_')}_${proPLData.startDate.toISOString().split('T')[0]}.pdf`,
+                          filename: `PL_${(settings.businessName || 'Business').replace(/[^a-z0-9]/gi, '_')}_${String(proPLData.periodLabel).replace(/[^a-z0-9]/gi, '_').replace(/_+/g, '_').replace(/^_|_$/g, '')}.pdf`,
                           image: { type: 'jpeg', quality: 0.95 },
                           html2canvas: {
                             scale: 2,
